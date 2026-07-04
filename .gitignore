@@ -1,0 +1,20 @@
+# 파이썬 가상환경 (각자 새로 만듦)
+.venv/
+
+# 용량 큰 다운로드 자료 (scripts/download_assets.sh 로 다시 받음)
+bin/
+models/
+
+# 파이썬 캐시
+__pycache__/
+*.pyc
+
+# 맥 시스템 파일
+.DS_Store
+
+# 사용자별 설정 (각자 생김)
+config.json
+
+# 이 프로젝트와 무관한 폴더
+portfolio-site/
+.claude/
