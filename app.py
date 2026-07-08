@@ -85,6 +85,8 @@ class BiseoApp(rumps.App):
 
         # ===== 카테고리 메뉴 구성 =====
         self.menu = [
+            rumps.MenuItem("🎪 플로팅 팔레트 열기", callback=self.on_open_palette),
+            None,
             _submenu("📸 캡처", [
                 ("영역 캡처", self.on_area),
                 ("전체화면 캡처", self.on_full),
@@ -207,6 +209,10 @@ class BiseoApp(rumps.App):
         except Exception as e:
             rumps.alert(title="마이크 오류", message=str(e))
             return False
+
+    # ===================== 플로팅 팔레트 =====================
+    def on_open_palette(self, _):
+        subprocess.Popen([sys.executable, os.path.join(APP_DIR, "palette.py")])
 
     # ===================== 실시간 통역 창 =====================
     def on_live(self, _):

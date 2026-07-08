@@ -5,3 +5,4 @@ PySide6==6.10.3         # 편집창 / 실시간 통역 창 GUI
 faster-whisper==1.2.1   # 음성 → 글자 (오프라인)
 sentencepiece==0.2.1    # 번역 토크나이저
 ctranslate2==4.8.0      # 음성인식/번역 모델 실행 엔진
+pyobjc-framework-Cocoa  # macOS 플로팅 윈도우
