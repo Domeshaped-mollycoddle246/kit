@@ -1,236 +1,58 @@
-"""귀여운 토끼 아이콘 생성 (3D 스타일)"""
+"""3D 토끼 아이콘 + 점프 애니메이션 프레임 생성
 
-from PIL import Image, ImageDraw
+원본: Microsoft Fluent Emoji 3D 'Rabbit Face' (MIT 라이선스)
+assets/rabbit_3d.png 를 바탕으로 아이콘과 점프 프레임 8장을 만듭니다.
+"""
+
 import math
+import os
+
+from PIL import Image
+
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC = os.path.join(APP_DIR, "assets", "rabbit_3d.png")
+SIZE = 200          # 출력 캔버스 크기
+RABBIT = 150        # 토끼 기본 크기
+JUMP = 26           # 최대 점프 높이(px)
+FRAMES = 8
 
 
-def create_rabbit_icon(size=200, filename="assets/rabbit_icon.png"):
-    """귀여운 토끼 아이콘을 생성합니다."""
-    img = Image.new("RGBA", (size, size), (255, 255, 255, 0))
-    draw = ImageDraw.Draw(img, "RGBA")
+def make_frame(frame: int) -> Image.Image:
+    """점프 중인 토끼 한 프레임 (squash & stretch 포함)"""
+    src = Image.open(SRC).convert("RGBA")
 
-    center_x, center_y = size // 2, size // 2
-    scale = size / 200
+    t = frame / FRAMES                      # 0 → 1
+    height = math.sin(t * math.pi)          # 0 → 1 → 0 (포물선)
+    jump = int(JUMP * height)
 
-    # 토끼 얼굴 (원형)
-    face_rad = int(60 * scale)
-    draw.ellipse(
-        [center_x - face_rad, center_y - int(50 * scale),
-         center_x + face_rad, center_y + int(70 * scale)],
-        fill=(240, 240, 255)  # 밝은 흰색
-    )
+    # 뛰어오를 때 세로로 길쭉하게, 착지 직전엔 납작하게
+    stretch = 1.0 + 0.10 * math.sin(t * 2 * math.pi)
+    w = int(RABBIT / stretch)
+    h = int(RABBIT * stretch)
+    rabbit = src.resize((w, h), Image.LANCZOS)
 
-    # 양쪽 귀 (긴 타원)
-    ear_width = int(30 * scale)
-    ear_height = int(80 * scale)
-    left_ear_x = center_x - int(40 * scale)
-    right_ear_x = center_x + int(40 * scale)
-
-    # 왼쪽 귀
-    draw.ellipse(
-        [left_ear_x - int(15 * scale), center_y - int(50 * scale),
-         left_ear_x + int(15 * scale), center_y - int(50 * scale) + ear_height],
-        fill=(250, 220, 240)  # 분홍색
-    )
-
-    # 오른쪽 귀
-    draw.ellipse(
-        [right_ear_x - int(15 * scale), center_y - int(50 * scale),
-         right_ear_x + int(15 * scale), center_y - int(50 * scale) + ear_height],
-        fill=(250, 220, 240)
-    )
-
-    # 귀 내부
-    draw.ellipse(
-        [left_ear_x - int(8 * scale), center_y - int(40 * scale),
-         left_ear_x + int(8 * scale), center_y - int(40 * scale) + int(60 * scale)],
-        fill=(255, 200, 220)
-    )
-    draw.ellipse(
-        [right_ear_x - int(8 * scale), center_y - int(40 * scale),
-         right_ear_x + int(8 * scale), center_y - int(40 * scale) + int(60 * scale)],
-        fill=(255, 200, 220)
-    )
-
-    # 눈
-    eye_y = center_y - int(15 * scale)
-    eye_size = int(12 * scale)
-
-    # 왼쪽 눈
-    draw.ellipse(
-        [center_x - int(25 * scale) - eye_size // 2, eye_y - eye_size // 2,
-         center_x - int(25 * scale) + eye_size // 2, eye_y + eye_size // 2],
-        fill=(50, 50, 50)
-    )
-
-    # 오른쪽 눈
-    draw.ellipse(
-        [center_x + int(25 * scale) - eye_size // 2, eye_y - eye_size // 2,
-         center_x + int(25 * scale) + eye_size // 2, eye_y + eye_size // 2],
-        fill=(50, 50, 50)
-    )
-
-    # 눈 하이라이트
-    light_size = int(5 * scale)
-    draw.ellipse(
-        [center_x - int(25 * scale) - int(2 * scale), eye_y - int(2 * scale),
-         center_x - int(25 * scale) + light_size, eye_y + light_size],
-        fill=(255, 255, 255)
-    )
-    draw.ellipse(
-        [center_x + int(25 * scale) - int(2 * scale), eye_y - int(2 * scale),
-         center_x + int(25 * scale) + light_size, eye_y + light_size],
-        fill=(255, 255, 255)
-    )
-
-    # 코
-    nose_y = center_y + int(10 * scale)
-    nose_size = int(8 * scale)
-    draw.ellipse(
-        [center_x - nose_size // 2, nose_y - nose_size // 2,
-         center_x + nose_size // 2, nose_y + nose_size // 2],
-        fill=(255, 150, 180)  # 분홍색
-    )
-
-    # 입 (웃는 표정)
-    mouth_y = nose_y + int(15 * scale)
-    mouth_width = int(20 * scale)
-    draw.arc(
-        [center_x - mouth_width, mouth_y - int(10 * scale),
-         center_x + mouth_width, mouth_y + int(10 * scale)],
-        start=0, end=180, fill=(50, 50, 50), width=int(3 * scale)
-    )
-
-    # 뺨 (분홍 동그라미)
-    cheek_size = int(15 * scale)
-    draw.ellipse(
-        [center_x - int(55 * scale) - cheek_size // 2, center_y - int(10 * scale) - cheek_size // 2,
-         center_x - int(55 * scale) + cheek_size // 2, center_y - int(10 * scale) + cheek_size // 2],
-        fill=(255, 180, 200, 150)  # 반투명 분홍
-    )
-    draw.ellipse(
-        [center_x + int(55 * scale) - cheek_size // 2, center_y - int(10 * scale) - cheek_size // 2,
-         center_x + int(55 * scale) + cheek_size // 2, center_y - int(10 * scale) + cheek_size // 2],
-        fill=(255, 180, 200, 150)
-    )
-
-    img.save(filename)
-    print(f"✅ 토끼 아이콘 생성됨: {filename}")
+    canvas = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
+    x = (SIZE - w) // 2
+    y = SIZE - h - 10 - jump                # 바닥 기준으로 점프
+    canvas.paste(rabbit, (x, y), rabbit)
+    return canvas
 
 
-def create_rabbit_icon_jumping(size=200, frame=0, filename="assets/rabbit_jumping_{frame}.png"):
-    """점프하는 토끼 애니메이션 프레임 생성"""
-    # 점프 높이 계산 (사인파)
-    jump_height = int(20 * math.sin(frame * math.pi / 8)) if frame < 8 else 0
+def main():
+    os.makedirs(os.path.join(APP_DIR, "assets"), exist_ok=True)
 
-    img = Image.new("RGBA", (size, size), (255, 255, 255, 0))
-    draw = ImageDraw.Draw(img, "RGBA")
+    # 정지 아이콘: 원본을 캔버스 중앙에
+    src = Image.open(SRC).convert("RGBA").resize((RABBIT, RABBIT), Image.LANCZOS)
+    canvas = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
+    canvas.paste(src, ((SIZE - RABBIT) // 2, SIZE - RABBIT - 10), src)
+    canvas.save(os.path.join(APP_DIR, "assets", "rabbit_icon.png"))
+    print("✅ assets/rabbit_icon.png")
 
-    center_x, center_y = size // 2, size // 2
-    center_y -= jump_height  # 점프 높이만큼 위로 이동
-    scale = size / 200
-
-    # 토끼 그리기 (동일하게)
-    face_rad = int(60 * scale)
-    draw.ellipse(
-        [center_x - face_rad, center_y - int(50 * scale),
-         center_x + face_rad, center_y + int(70 * scale)],
-        fill=(240, 240, 255)
-    )
-
-    ear_height = int(80 * scale)
-    left_ear_x = center_x - int(40 * scale)
-    right_ear_x = center_x + int(40 * scale)
-
-    draw.ellipse(
-        [left_ear_x - int(15 * scale), center_y - int(50 * scale),
-         left_ear_x + int(15 * scale), center_y - int(50 * scale) + ear_height],
-        fill=(250, 220, 240)
-    )
-    draw.ellipse(
-        [right_ear_x - int(15 * scale), center_y - int(50 * scale),
-         right_ear_x + int(15 * scale), center_y - int(50 * scale) + ear_height],
-        fill=(250, 220, 240)
-    )
-
-    draw.ellipse(
-        [left_ear_x - int(8 * scale), center_y - int(40 * scale),
-         left_ear_x + int(8 * scale), center_y - int(40 * scale) + int(60 * scale)],
-        fill=(255, 200, 220)
-    )
-    draw.ellipse(
-        [right_ear_x - int(8 * scale), center_y - int(40 * scale),
-         right_ear_x + int(8 * scale), center_y - int(40 * scale) + int(60 * scale)],
-        fill=(255, 200, 220)
-    )
-
-    eye_y = center_y - int(15 * scale)
-    eye_size = int(12 * scale)
-
-    draw.ellipse(
-        [center_x - int(25 * scale) - eye_size // 2, eye_y - eye_size // 2,
-         center_x - int(25 * scale) + eye_size // 2, eye_y + eye_size // 2],
-        fill=(50, 50, 50)
-    )
-    draw.ellipse(
-        [center_x + int(25 * scale) - eye_size // 2, eye_y - eye_size // 2,
-         center_x + int(25 * scale) + eye_size // 2, eye_y + eye_size // 2],
-        fill=(50, 50, 50)
-    )
-
-    light_size = int(5 * scale)
-    draw.ellipse(
-        [center_x - int(25 * scale) - int(2 * scale), eye_y - int(2 * scale),
-         center_x - int(25 * scale) + light_size, eye_y + light_size],
-        fill=(255, 255, 255)
-    )
-    draw.ellipse(
-        [center_x + int(25 * scale) - int(2 * scale), eye_y - int(2 * scale),
-         center_x + int(25 * scale) + light_size, eye_y + light_size],
-        fill=(255, 255, 255)
-    )
-
-    nose_y = center_y + int(10 * scale)
-    nose_size = int(8 * scale)
-    draw.ellipse(
-        [center_x - nose_size // 2, nose_y - nose_size // 2,
-         center_x + nose_size // 2, nose_y + nose_size // 2],
-        fill=(255, 150, 180)
-    )
-
-    mouth_y = nose_y + int(15 * scale)
-    mouth_width = int(20 * scale)
-    draw.arc(
-        [center_x - mouth_width, mouth_y - int(10 * scale),
-         center_x + mouth_width, mouth_y + int(10 * scale)],
-        start=0, end=180, fill=(50, 50, 50), width=int(3 * scale)
-    )
-
-    cheek_size = int(15 * scale)
-    draw.ellipse(
-        [center_x - int(55 * scale) - cheek_size // 2, center_y - int(10 * scale) - cheek_size // 2,
-         center_x - int(55 * scale) + cheek_size // 2, center_y - int(10 * scale) + cheek_size // 2],
-        fill=(255, 180, 200, 150)
-    )
-    draw.ellipse(
-        [center_x + int(55 * scale) - cheek_size // 2, center_y - int(10 * scale) - cheek_size // 2,
-         center_x + int(55 * scale) + cheek_size // 2, center_y - int(10 * scale) + cheek_size // 2],
-        fill=(255, 180, 200, 150)
-    )
-
-    filename_formatted = filename.format(frame=frame)
-    img.save(filename_formatted)
-    print(f"✅ 애니메이션 프레임 생성됨: {filename_formatted}")
+    for i in range(FRAMES):
+        path = os.path.join(APP_DIR, "assets", f"rabbit_jumping_{i}.png")
+        make_frame(i).save(path)
+        print(f"✅ {path}")
 
 
 if __name__ == "__main__":
-    import os
-    os.makedirs("assets", exist_ok=True)
-
-    # 정적 토끼 아이콘
-    create_rabbit_icon(200)
-
-    # 점프 애니메이션 프레임들
-    print("\n🐰 점프 애니메이션 프레임 생성 중...")
-    for i in range(8):
-        create_rabbit_icon_jumping(200, i, "assets/rabbit_jumping_{frame}.png")
+    main()
