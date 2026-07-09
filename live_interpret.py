@@ -30,7 +30,8 @@ TMPDIR = "/tmp/biseo_live"
 
 SEGMENT_SEC = 2        # 잘게 듣는 단위 (짧을수록 반응 빠름)
 MAX_BUFFER_SEC = 10    # 말이 계속 이어져도 최대 이 길이마다 한 번 인식
-QUIET_RMS = 400        # 이보다 조용하면 '말이 멈춤'으로 판단
+GATE_MIN = 150         # '조용함' 판단 최소 기준. 실제 기준은 주변 소음에 맞춰
+                       # 자동으로 올라갑니다 (조용한 방에서 작게 말해도 인식되게)
 
 
 def _tail_rms(path: str, tail_sec: float = 0.5) -> int:
@@ -44,7 +45,7 @@ def _tail_rms(path: str, tail_sec: float = 0.5) -> int:
             w.setpos(n - take)
             return audioop.rms(w.readframes(take), 2)
     except Exception:
-        return QUIET_RMS + 1   # 판단 불가 시 '말하는 중'으로 취급
+        return 10 ** 6         # 판단 불가 시 '말하는 중'으로 취급
 
 
 def _max_rms(path: str) -> int:
@@ -77,6 +78,8 @@ class Worker(QThread):
         self._running = True
         self.proc = None
         self.prev_text = ""     # 직전 인식 결과 (문맥 힌트)
+        self._gate = GATE_MIN   # '조용함' 기준 (주변 소음에 맞춰 자동 조정)
+        self._rms_hist = []     # 최근 조각들의 소리 크기 기록
 
     def _resolve_mic(self):
         """장치 '이름'으로 최신 번호를 다시 찾습니다.
@@ -100,6 +103,14 @@ class Worker(QThread):
             self.status.emit("⚠️ 마이크를 찾지 못했어요. 마이크 연결을 확인해 주세요.")
             return
 
+        # 첫 문장부터 빨리 나오도록 인식 모델을 미리 올려둡니다
+        self.status.emit("🧠 음성인식 준비 중… (잠시만요)")
+        try:
+            transcribe._get_model()
+        except Exception as e:
+            self.status.emit("⚠️ 음성인식 모델 오류: " + str(e))
+            return
+
         cmd = [avdevices.FFMPEG, "-hide_banner", "-y",
                "-f", "avfoundation", "-i", f":{mic}",
                "-ac", "1", "-ar", "16000",
@@ -114,6 +125,7 @@ class Worker(QThread):
         buffer = []          # 아직 인식 안 한 조각들
         buffer_sec = 0
         processed = set()
+        speaking = False     # 방금까지 말소리가 들렸는지 (상태 표시용)
 
         while self._running:
             # 마이크가 안 열리면(장치 바뀜 등) ffmpeg가 바로 죽어요 → 알려주기
@@ -129,8 +141,24 @@ class Worker(QThread):
                 buffer.append(f)
                 buffer_sec += SEGMENT_SEC
 
+                # '조용함' 기준을 주변 소음에 맞춰 자동 조정:
+                # 최근 조각들 중 조용한 편(하위 25%)의 2.5배를 기준으로 삼되,
+                # 최소 GATE_MIN 밑으로는 내려가지 않게.
+                rms = _max_rms(f)
+                self._rms_hist = (self._rms_hist + [rms])[-30:]
+                floor = sorted(self._rms_hist)[len(self._rms_hist) // 4]
+                # 말을 오래 이어가면 기준선이 말소리까지 올라가므로 상한을 둠
+                self._gate = max(GATE_MIN, min(int(floor * 2.5), 600))
+
+                # 말소리 감지 여부를 상태줄로 알려줌 (마이크가 듣고 있다는 확인)
+                if rms > self._gate and not speaking:
+                    speaking = True
+                    self.status.emit("🗣 말소리 감지! 잠깐 멈추면 자막이 떠요")
+                elif rms <= self._gate and speaking:
+                    speaking = False
+
                 # 말이 멈췄거나(조각 끝이 조용) 버퍼가 가득 → 한 번에 인식
-                if _tail_rms(f) < QUIET_RMS or buffer_sec >= MAX_BUFFER_SEC:
+                if _tail_rms(f) < self._gate or buffer_sec >= MAX_BUFFER_SEC:
                     self._flush(buffer)
                     buffer, buffer_sec = [], 0
             time.sleep(0.3)
@@ -151,7 +179,8 @@ class Worker(QThread):
             return
         try:
             # 전부 조용한 조각이면 인식할 필요 없음
-            if max(_max_rms(f) for f in chunk_files) < QUIET_RMS:
+            # (기준을 넘는 소리가 있으면 Whisper VAD가 한 번 더 걸러줍니다)
+            if max(_max_rms(f) for f in chunk_files) < self._gate:
                 return
             merged = os.path.join(TMPDIR, "merged.wav")
             _concat_wavs(chunk_files, merged)
@@ -161,6 +190,8 @@ class Worker(QThread):
                 self.prev_text = (self.prev_text + " " + text)[-300:]
                 tr = translate.translate(text, src, tgt) if src != tgt else text
                 self.result.emit(text, tr)
+                if self._running:
+                    self.status.emit("🎧 듣는 중… 말씀하세요")
         except Exception as e:
             self.status.emit("처리 오류: " + str(e))
         finally:
