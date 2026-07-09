@@ -32,13 +32,30 @@ def start() -> str:
 
     _outfile = str(config.save_dir() / datetime.now().strftime("녹화_%Y%m%d_%H%M%S.mp4"))
 
-    spec = f"{screen}:{mic}" if mic is not None else f"{screen}:none"
-    cmd = [
-        avdevices.FFMPEG, "-hide_banner", "-y",
-        "-f", "avfoundation", "-framerate", "30", "-capture_cursor", "1",
-        "-i", spec,
+    # 화면과 마이크를 한 입력("화면:마이크")으로 받으면 서로 다른 클럭으로
+    # 타임스탬프가 찍혀 영상과 소리가 어긋납니다. 입력을 둘로 나누고
+    # 둘 다 실제 시계(wallclock) 기준으로 찍어 싱크를 맞춥니다.
+    cmd = [avdevices.FFMPEG, "-hide_banner", "-y"]
+    cmd += [
+        "-f", "avfoundation", "-use_wallclock_as_timestamps", "1",
+        "-thread_queue_size", "512",
+        "-framerate", "30", "-capture_cursor", "1",
+        "-i", f"{screen}:none",
+    ]
+    if mic is not None:
+        cmd += [
+            "-f", "avfoundation", "-use_wallclock_as_timestamps", "1",
+            "-thread_queue_size", "512",
+            "-i", f"none:{mic}",
+            "-map", "0:v", "-map", "1:a",
+            # 마이크 클럭이 미세하게 빠르거나 느려도 소리를 늘이고 줄여 맞춤
+            "-af", "aresample=async=1:first_pts=0",
+            "-c:a", "aac",
+        ]
+    cmd += [
         "-c:v", "h264_videotoolbox", "-b:v", "8000k", "-pix_fmt", "yuv420p",
-        "-c:a", "aac", _outfile,
+        "-fps_mode", "vfr",
+        _outfile,
     ]
     # stdin을 열어둬서 나중에 'q'를 보내 깔끔하게 멈춥니다.
     _proc = subprocess.Popen(cmd, stdin=subprocess.PIPE,
