@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (QApplication, QFileDialog, QInputDialog,
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, APP_DIR)
 
-RABBIT_GIF = os.path.join(APP_DIR, "assets", "rabbit_animated.gif")
+RABBIT_GIF = os.path.join(APP_DIR, "assets", "rabbit_animated.webp")
 RABBIT_SIZE = 88    # 토끼 표시 크기(px)
 JUMP_HEIGHT = 28    # 점프 높이(px)
 CLICK_SLOP = 6      # 이 거리(px) 이상 움직이면 클릭이 아니라 드래그
