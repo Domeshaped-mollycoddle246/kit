@@ -7,12 +7,56 @@ import subprocess
 import webbrowser
 from pathlib import Path
 
-from PySide6.QtCore import Qt, QSize, QTimer, QPoint, QRect
-from PySide6.QtGui import QIcon, QPixmap, QFont
+from PySide6.QtCore import (Qt, QSize, QTimer, QPoint, QRect, QEasingCurve,
+                            QPropertyAnimation, QSequentialAnimationGroup)
+from PySide6.QtGui import QIcon, QPixmap, QFont, QMovie
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QPushButton, QVBoxLayout, QHBoxLayout,
     QWidget, QLabel, QScrollArea
 )
+
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+RABBIT_GIF = os.path.join(APP_DIR, "assets", "rabbit_animated.gif")
+RABBIT_SIZE = 100   # 토끼 표시 크기(px)
+JUMP_HEIGHT = 34    # 점프 높이(px)
+
+
+class RabbitLabel(QLabel):
+    """클릭하면 점프하는 토끼 라벨"""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._jump_anim = None
+
+    def mousePressEvent(self, event):
+        self.jump()
+        super().mousePressEvent(event)
+
+    def jump(self):
+        """폴짝 점프 (올라갈 땐 부드럽게, 내려올 땐 통통 튀며 착지)"""
+        if self._jump_anim and self._jump_anim.state() == QSequentialAnimationGroup.State.Running:
+            return
+        ground = self.pos()
+        top = ground - QPoint(0, JUMP_HEIGHT)
+
+        up = QPropertyAnimation(self, b"pos")
+        up.setDuration(260)
+        up.setStartValue(ground)
+        up.setEndValue(top)
+        up.setEasingCurve(QEasingCurve.Type.OutQuad)
+
+        down = QPropertyAnimation(self, b"pos")
+        down.setDuration(420)
+        down.setStartValue(top)
+        down.setEndValue(ground)
+        down.setEasingCurve(QEasingCurve.Type.OutBounce)
+
+        group = QSequentialAnimationGroup(self)
+        group.addAnimation(up)
+        group.addAnimation(down)
+        group.start()
+        self._jump_anim = group
 
 
 class FloatingPaletteWindow(QMainWindow):
@@ -20,8 +64,6 @@ class FloatingPaletteWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.animation_frame = 0
-        self.is_hovering = False
 
         # 윈도우 스타일 설정
         self.setWindowTitle("🐰 비서 팔레트")
@@ -41,13 +83,10 @@ class FloatingPaletteWindow(QMainWindow):
         # UI 구성
         self._create_ui()
 
-        # 애니메이션 타이머
-        self.animation_timer = QTimer()
-        self.animation_timer.timeout.connect(self._animate_rabbit)
-        self.animation_timer.start(100)
-
-        # 마우스 추적
-        self.setMouseTracking(True)
+        # 주기적으로 혼자 폴짝 뛰기
+        self.jump_timer = QTimer(self)
+        self.jump_timer.timeout.connect(self.rabbit_label.jump)
+        self.jump_timer.start(3500)
 
     def _create_ui(self):
         """UI 구성요소 생성"""
@@ -58,34 +97,35 @@ class FloatingPaletteWindow(QMainWindow):
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
 
-        # 토끼 아이콘 (헤더)
-        header_layout = QHBoxLayout()
+        # 토끼 (항상 움직이는 GIF 애니메이션, 클릭하면 점프)
+        # 점프할 공간을 위해 위쪽 여유를 둔 컨테이너 안에 자유 배치합니다.
+        self.rabbit_area = QWidget()
+        self.rabbit_area.setFixedHeight(RABBIT_SIZE + JUMP_HEIGHT + 6)
 
-        self.rabbit_label = QLabel()
-        self.rabbit_label.setStyleSheet("""
-            QLabel {
-                background-color: rgba(240, 240, 255, 200);
-                border-radius: 15px;
-                padding: 10px;
-            }
-        """)
-        self._update_rabbit_icon()
-        header_layout.addStretch()
-        header_layout.addWidget(self.rabbit_label)
-        header_layout.addStretch()
+        self.rabbit_label = RabbitLabel(self.rabbit_area)
+        self.rabbit_label.setFixedSize(RABBIT_SIZE, RABBIT_SIZE)
+        if os.path.exists(RABBIT_GIF):
+            self.movie = QMovie(RABBIT_GIF)
+            self.movie.setScaledSize(QSize(RABBIT_SIZE, RABBIT_SIZE))
+            self.rabbit_label.setMovie(self.movie)
+            self.movie.start()
+        else:
+            self.rabbit_label.setText("🐰")
+            self.rabbit_label.setStyleSheet("font-size: 64px;")
+            self.rabbit_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # 타이틀
         title = QLabel("🐰 비서")
-        title.setFont(QFont("System", 14, QFont.Weight.Bold))
+        title.setFont(QFont("Apple SD Gothic Neo", 14, QFont.Weight.Bold))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet("""
             QLabel {
                 color: #333;
-                padding: 10px;
+                padding: 4px;
             }
         """)
 
-        main_layout.addLayout(header_layout)
+        main_layout.addWidget(self.rabbit_area)
         main_layout.addWidget(title)
 
         # 스크롤 가능한 버튼 영역
@@ -192,39 +232,12 @@ class FloatingPaletteWindow(QMainWindow):
 
         central.setLayout(main_layout)
 
-    def _update_rabbit_icon(self):
-        """토끼 아이콘 업데이트"""
-        APP_DIR = os.path.dirname(os.path.abspath(__file__))
-        icon_path = os.path.join(APP_DIR, "assets", "rabbit_icon.png")
-
-        if os.path.exists(icon_path):
-            pixmap = QPixmap(icon_path)
-            scaled = pixmap.scaledToHeight(60, Qt.TransformationMode.SmoothTransformation)
-            self.rabbit_label.setPixmap(scaled)
-        else:
-            self.rabbit_label.setText("🐰")
-
-    def _animate_rabbit(self):
-        """토끼 점프 애니메이션"""
-        if self.is_hovering:
-            APP_DIR = os.path.dirname(os.path.abspath(__file__))
-            frame_path = os.path.join(
-                APP_DIR, "assets", f"rabbit_jumping_{self.animation_frame % 8}.png"
-            )
-
-            if os.path.exists(frame_path):
-                pixmap = QPixmap(frame_path)
-                scaled = pixmap.scaledToHeight(60, Qt.TransformationMode.SmoothTransformation)
-                self.rabbit_label.setPixmap(scaled)
-
-            self.animation_frame += 1
-
-    def mouseMoveEvent(self, event):
-        """마우스 이동 시 토끼 애니메이션 시작"""
-        if self.rabbit_label.geometry().contains(event.pos()):
-            self.is_hovering = True
-        else:
-            self.is_hovering = False
+    def showEvent(self, event):
+        """창이 뜬 뒤 토끼를 바닥(컨테이너 아래쪽) 가운데에 놓습니다."""
+        super().showEvent(event)
+        x = (self.rabbit_area.width() - RABBIT_SIZE) // 2
+        y = self.rabbit_area.height() - RABBIT_SIZE
+        self.rabbit_label.move(x, y)
 
     def _save_position(self):
         """윈도우 위치 저장"""
