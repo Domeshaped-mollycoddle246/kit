@@ -28,11 +28,11 @@ JUMP_HEIGHT = 28    # 점프 높이(px)
 CLICK_SLOP = 6      # 이 거리(px) 이상 움직이면 클릭이 아니라 드래그
 
 WEB_TOOLS = [
-    ("♻️ 모든 변환(all-to-all)", "https://commme.github.io/all-to-all/"),
-    ("🔄 파일 → PNG 변환", "https://commme.github.io/file-to-png/"),
-    ("🗜️ 압축 풀기", "https://commme.github.io/unzip-tool/"),
-    ("🖼️ 이미지 도구", "https://commme.github.io/image-tools/"),
-    ("🤖 AI 도구 모음", "https://commme.github.io/ai-tools-hub/"),
+    ("모든 변환(all-to-all)", "https://commme.github.io/all-to-all/"),
+    ("파일 → PNG 변환", "https://commme.github.io/file-to-png/"),
+    ("압축 풀기", "https://commme.github.io/unzip-tool/"),
+    ("이미지 도구", "https://commme.github.io/image-tools/"),
+    ("AI 도구 모음", "https://commme.github.io/ai-tools-hub/"),
 ]
 
 
@@ -151,7 +151,7 @@ class RabbitPalette(QWidget):
     def _show_menu(self):
         m = QMenu(self)
 
-        cap = m.addMenu("📸 캡처")
+        cap = m.addMenu("⌗ 캡처")
         cap.addAction("영역 캡처", lambda: self._in_thread(self._cap_area))
         cap.addAction("전체화면 캡처", lambda: self._in_thread(self._cap_full))
         cap.addAction("창 캡처", lambda: self._in_thread(self._cap_window))
@@ -160,44 +160,44 @@ class RabbitPalette(QWidget):
         cap.addAction("캡처 폴더 열기", self._open_folder)
 
         from features import audio, record
-        rec_label = "⏹️ 화면 녹화 중지" if record.is_recording() else "🎥 화면 녹화 시작"
+        rec_label = "⏹︎ 화면 녹화 중지" if record.is_recording() else "⏺︎ 화면 녹화 시작"
         m.addAction(rec_label, self._toggle_record)
 
         if audio.is_recording() and self._mic_purpose == "record":
-            m.addAction("⏹️ 음성 녹음 중지", self._toggle_audio)
+            m.addAction("⏹︎ 음성 녹음 중지", self._toggle_audio)
         else:
-            m.addAction("🎙️ 음성 녹음 시작", self._toggle_audio)
+            m.addAction("∿ 음성 녹음 시작", self._toggle_audio)
 
-        m.addAction("📝 녹음을 글자로 변환…", self._transcribe_file)
+        m.addAction("✎ 녹음을 글자로 변환…", self._transcribe_file)
 
         m.addSeparator()
         if audio.is_recording() and self._mic_purpose == "interpret":
-            m.addAction("⏹️ 통역 중지", self._toggle_interpret)
+            m.addAction("⏹︎ 통역 중지", self._toggle_interpret)
         else:
-            m.addAction("🎤 통역 시작 (말→번역)", self._toggle_interpret)
-        m.addAction("💬 실시간 통역 창", self._open_live)
+            m.addAction("▶︎ 통역 시작 (말→번역)", self._toggle_interpret)
+        m.addAction("실시간 통역 창", self._open_live)
 
-        tr = m.addMenu("🌍 번역 (글)")
+        tr = m.addMenu("⇄ 번역 (글)")
         from features import translate as tr_mod
         for code in ("en", "ko", "ja", "zh"):
             tr.addAction(f"→ {tr_mod.LANGS[code]}",
                          lambda c=code: self._translate_text(c))
 
-        web = m.addMenu("🌐 웹 도구")
+        web = m.addMenu("✦ 웹 도구")
         for label, url in WEB_TOOLS:
             web.addAction(label, lambda u=url: webbrowser.open(u))
 
         m.addSeparator()
-        m.addAction("🧹 바탕화면 청소", self._cleanup)
+        m.addAction("⌂ 바탕화면 청소", self._cleanup)
 
-        st = m.addMenu("⚙️ 설정")
+        st = m.addMenu("⚙︎ 설정")
         from features import autostart
         auto = QAction("로그인 시 자동 시작", st)
         auto.setCheckable(True)
         auto.setChecked(autostart.is_enabled())
         auto.triggered.connect(self._toggle_autostart)
         st.addAction(auto)
-        st.addAction("📂 저장 폴더 변경…", self._change_folder)
+        st.addAction("저장 폴더 변경…", self._change_folder)
 
         m.addSeparator()
         m.addAction("✕ 토끼 숨기기 (종료)", self.close)
@@ -414,12 +414,12 @@ class RabbitPalette(QWidget):
         from features import audio, record
         parts = []
         if self._busy:
-            parts.append("⏳ " + self._busy)
+            parts.append("⋯ " + self._busy)
         if record.is_recording() and self._rec_start:
-            parts.append("🔴 화면 " + _fmt(time.time() - self._rec_start))
+            parts.append("● 화면 " + _fmt(time.time() - self._rec_start))
         if audio.is_recording() and self._aud_start:
             label = "통역" if self._mic_purpose == "interpret" else "녹음"
-            parts.append("🔴 " + label + " " + _fmt(time.time() - self._aud_start))
+            parts.append("● " + label + " " + _fmt(time.time() - self._aud_start))
         if parts:
             self.status.setText("  ".join(parts))
             self.status.show()

@@ -149,9 +149,9 @@ class Editor(QWidget):
         # ---- 도구 막대 ----
         bar = QHBoxLayout()
         self.tool_btns = {}
-        for key, label in [("mosaic", "🟥 모자이크"), ("rect", "⬜ 박스"),
-                           ("arrow", "➡️ 화살표"), ("pen", "✏️ 펜"),
-                           ("text", "🔤 글자"), ("crop", "✂️ 자르기")]:
+        for key, label in [("mosaic", "모자이크"), ("rect", "박스"),
+                           ("arrow", "화살표"), ("pen", "펜"),
+                           ("text", "글자"), ("crop", "자르기")]:
             b = QPushButton(label)
             b.setCheckable(True)
             b.clicked.connect(lambda _=False, k=key: self.set_tool(k))
@@ -171,8 +171,8 @@ class Editor(QWidget):
         self._refresh_colors()
 
         bar.addSpacing(10)
-        for label, fn in [("↩︎ 실행취소", self.undo), ("📋 복사", self.copy),
-                          ("💾 저장", self.save)]:
+        for label, fn in [("↩︎ 실행취소", self.undo), ("복사", self.copy),
+                          ("저장", self.save)]:
             b = QPushButton(label)
             b.clicked.connect(fn)
             bar.addWidget(b)
@@ -287,12 +287,12 @@ class Editor(QWidget):
         stem, _ = os.path.splitext(self.path)
         out = stem + "_편집.png"
         self.work.save(out)
-        self.setWindowTitle("저장됨 ✅ — " + os.path.basename(out))
+        self.setWindowTitle("저장됨 ✓ — " + os.path.basename(out))
         subprocess.run(["open", "-R", out])
 
     def copy(self):
         QApplication.clipboard().setPixmap(pil_to_pixmap(self.work))
-        self.setWindowTitle("클립보드에 복사됨 📋 (Cmd+V 로 붙여넣기)")
+        self.setWindowTitle("클립보드에 복사됨 ✓ (Cmd+V 로 붙여넣기)")
 
 
 def main():

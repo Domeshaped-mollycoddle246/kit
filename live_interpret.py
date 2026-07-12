@@ -121,11 +121,11 @@ class Worker(QThread):
         self._tmpdir = tempfile.mkdtemp(prefix="kit_live_")
 
         # 첫 문장부터 빨리 나오도록 인식 모델을 미리 올려둡니다
-        self.status.emit("🧠 음성인식 준비 중… (잠시만요)")
+        self.status.emit("음성인식 준비 중… (잠시만요)")
         try:
             transcribe._get_model()
         except Exception as e:
-            self.status.emit("⚠️ 음성인식 모델 오류: " + str(e))
+            self.status.emit("음성인식 모델 오류: " + str(e))
             return
 
         # CoreAudio로 마이크를 직접 받습니다 (ffmpeg avfoundation은
@@ -141,9 +141,9 @@ class Worker(QThread):
                                     callback=callback)
             stream.start()
         except Exception as e:
-            self.status.emit("⚠️ 마이크를 열지 못했어요: " + str(e))
+            self.status.emit("마이크를 열지 못했어요: " + str(e))
             return
-        self.status.emit("🎧 듣는 중… 말씀하세요 (말을 잠깐 멈추면 자막이 떠요)")
+        self.status.emit("듣는 중… 말씀하세요 (말을 잠깐 멈추면 자막이 떠요)")
 
         buffer = []          # 아직 인식 안 한 조각들
         buffer_sec = 0
@@ -177,7 +177,7 @@ class Worker(QThread):
             # 말소리 감지 여부를 상태줄로 알려줌 (마이크가 듣고 있다는 확인)
             if rms > self._gate and not speaking:
                 speaking = True
-                self.status.emit("🗣 말소리 감지! 잠깐 멈추면 자막이 떠요")
+                self.status.emit("말소리 감지 — 잠깐 멈추면 자막이 떠요")
             elif rms <= self._gate and speaking:
                 speaking = False
 
@@ -215,7 +215,7 @@ class Worker(QThread):
                 tr = translate.translate(text, src, tgt) if src != tgt else text
                 self.result.emit(text, tr)
                 if self._running:
-                    self.status.emit("🎧 듣는 중… 말씀하세요")
+                    self.status.emit("듣는 중… 말씀하세요")
         except Exception as e:
             self.status.emit("처리 오류: " + str(e))
         finally:
@@ -253,14 +253,14 @@ class LiveWindow(QWidget):
         self.toggle_btn = QPushButton("⏹ 중지")
         self.toggle_btn.clicked.connect(self.toggle)
         top.addWidget(self.toggle_btn)
-        self.save_btn = QPushButton("💾 저장")
+        self.save_btn = QPushButton("저장")
         self.save_btn.clicked.connect(self.save)
         top.addWidget(self.save_btn)
         layout.addLayout(top)
 
         # 2줄: 마이크 선택 + 글자 크기 + 지우기
         row2 = QHBoxLayout()
-        row2.addWidget(QLabel("🎙"))
+        row2.addWidget(QLabel("마이크"))
         self.mic_combo = QComboBox()
         try:
             import sounddevice as sd
@@ -281,7 +281,7 @@ class LiveWindow(QWidget):
             b.setFixedWidth(44)
             b.clicked.connect(lambda _=False, d=delta: self.change_font(d))
             row2.addWidget(b)
-        clear_btn = QPushButton("🗑 지우기")
+        clear_btn = QPushButton("지우기")
         clear_btn.clicked.connect(lambda: self.view.clear())
         row2.addWidget(clear_btn)
         layout.addLayout(row2)
@@ -334,13 +334,13 @@ class LiveWindow(QWidget):
         if self.worker and self.worker.isRunning():
             self.worker.stop()
             self.worker.wait(6000)
-            self.status_lbl.setText("⏸ 중지됨. '▶ 시작'을 누르면 다시 들어요.")
+            self.status_lbl.setText("중지됨. '▶ 시작'을 누르면 다시 들어요.")
             self.toggle_btn.setText("▶ 시작")
         else:
             self.start()
 
     def on_result(self, original, translated):
-        self.view.append(f"🗣 {original}\n→ {translated}\n")
+        self.view.append(f"{original}\n→ {translated}\n")
         bar = self.view.verticalScrollBar()
         bar.setValue(bar.maximum())
 

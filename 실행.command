@@ -39,12 +39,12 @@ fi
 # ---------- 3) 실행 ----------
 # 이미 켜져 있으면 중복 실행하지 않음 (대소문자 무관하게 확인)
 if pgrep -f "[Pp]ython app.py" >/dev/null; then
-  echo "✅ Kit이 이미 켜져 있어요. (메뉴바 위쪽 공구함 아이콘 확인)"
+  echo "✅ Kit이 이미 켜져 있어요. (메뉴바 위쪽 당근 아이콘 확인)"
 else
   # venv 파이썬을 직접 사용 — 폴더를 옮겨도 activate 경로 문제로 깨지지 않음
   nohup .venv/bin/python app.py >/tmp/biseo.log 2>&1 &
   disown
-  echo "✅ Kit을 켰어요! 메뉴바(화면 맨 위) 오른쪽에서 공구함 아이콘을 찾으세요."
+  echo "✅ Kit을 켰어요! 메뉴바(화면 맨 위) 오른쪽에서 당근 아이콘을 찾으세요."
 fi
 
 echo "이 창은 닫아도 됩니다."
