@@ -5,6 +5,8 @@
 
 > ⚠️ **macOS 전용** (Apple Silicon 권장). 현재 Windows·Linux는 지원하지 않습니다. → [지원 환경](#지원-환경)
 
+📖 **[사용자 매뉴얼 보기](https://commme.github.io/kit/)** — 설치부터 기능별 사용법, 문제 해결까지
+
 ## 기능
 
 | 카테고리 | 기능 |

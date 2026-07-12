@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kit 사용자 매뉴얼 — 맥 메뉴바 비서</title>
+<meta name="description" content="Kit — 캡처·녹화·녹음·통역·번역을 오프라인으로 해결하는 맥 메뉴바 비서 앱 사용 설명서">
+<style>
+  :root {
+    --bg: #faf9f7; --card: #ffffff; --text: #2c2a28; --muted: #6f6a64;
+    --accent: #e8734a; --accent-soft: #fdeee7; --border: #e8e4de;
+    --code-bg: #f3f0eb; --shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1a18; --card: #262320; --text: #ece8e3; --muted: #a39c93;
+      --accent: #f0855c; --accent-soft: #3a2c24; --border: #38332e;
+      --code-bg: #2e2a26; --shadow: 0 1px 3px rgba(0,0,0,.3);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: "Apple SD Gothic Neo", -apple-system, "Noto Sans KR", sans-serif;
+    line-height: 1.75; font-size: 16.5px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 20px 80px; }
+  header.hero { text-align: center; padding: 48px 0 36px; }
+  .hero img { width: 130px; height: 130px; }
+  .hero h1 { font-size: 2.3rem; margin: 8px 0 4px; letter-spacing: -0.5px; }
+  .hero p.tag { color: var(--muted); font-size: 1.05rem; }
+  .hero .badges { margin-top: 14px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .badge {
+    background: var(--accent-soft); color: var(--accent); border-radius: 999px;
+    padding: 4px 14px; font-size: .85rem; font-weight: 600;
+  }
+  nav.toc {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px 22px; box-shadow: var(--shadow); margin-bottom: 40px;
+  }
+  nav.toc strong { display: block; margin-bottom: 6px; }
+  nav.toc a { color: var(--accent); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+  nav.toc ol { padding-left: 22px; }
+  h2 {
+    font-size: 1.45rem; margin: 52px 0 16px; padding-top: 12px;
+    letter-spacing: -0.3px;
+  }
+  h2 .no { color: var(--accent); margin-right: 6px; }
+  h3 { font-size: 1.08rem; margin: 26px 0 8px; }
+  p { margin: 10px 0; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px 24px; box-shadow: var(--shadow); margin: 16px 0;
+  }
+  .step { display: flex; gap: 14px; margin: 18px 0; align-items: flex-start; }
+  .step .n {
+    flex: none; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); color: #fff; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin-top: 3px;
+  }
+  kbd, code {
+    background: var(--code-bg); border-radius: 6px; padding: 2px 7px;
+    font-family: "SF Mono", Menlo, monospace; font-size: .85em;
+  }
+  .path { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-size: .88rem; font-weight: 600; }
+  .tip {
+    border-left: 4px solid var(--accent); background: var(--accent-soft);
+    border-radius: 0 10px 10px 0; padding: 12px 18px; margin: 16px 0;
+  }
+  .tip b:first-child { color: var(--accent); }
+  details {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 20px; margin: 10px 0;
+  }
+  details summary { cursor: pointer; font-weight: 650; }
+  details[open] summary { margin-bottom: 8px; }
+  footer {
+    margin-top: 70px; padding-top: 24px; border-top: 1px solid var(--border);
+    color: var(--muted); font-size: .9rem; text-align: center;
+  }
+  footer a { color: var(--accent); }
+  @media (max-width: 480px) {
+    body { font-size: 15.5px; }
+    .hero h1 { font-size: 1.9rem; }
+    .card { padding: 16px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <img src="rabbit.webp" alt="Kit 토끼 마스코트">
+  <h1>Kit 사용자 매뉴얼</h1>
+  <p class="tag">맥 메뉴바에 사는 작은 비서 — 캡처 · 녹화 · 녹음 · 통역 · 번역</p>
+  <div class="badges">
+    <span class="badge">🔒 완전 오프라인</span>
+    <span class="badge">🔑 API 키 불필요</span>
+    <span class="badge">🍎 macOS 전용</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <strong>차례</strong>
+  <ol>
+    <li><a href="#install">설치하기</a></li>
+    <li><a href="#start">시작하기 — 메뉴바와 토끼</a></li>
+    <li><a href="#capture">캡처와 편집</a></li>
+    <li><a href="#record">화면 녹화 · 음성 녹음</a></li>
+    <li><a href="#interpret">통역과 번역</a></li>
+    <li><a href="#etc">청소 · 설정</a></li>
+    <li><a href="#permission">권한 설정 (처음 한 번)</a></li>
+    <li><a href="#faq">문제 해결 / 자주 묻는 질문</a></li>
+    <li><a href="#privacy">개인정보</a></li>
+  </ol>
+</nav>
+
+<h2 id="install"><span class="no">1.</span>설치하기</h2>
+<div class="card">
+  <div class="step"><div class="n">1</div><div>
+    <b>내려받기</b> — <a href="https://github.com/commme/kit">GitHub 페이지</a>에서
+    초록색 <code>Code</code> 버튼 → <code>Download ZIP</code>을 누르고, 받은 ZIP의 압축을 풉니다.
+  </div></div>
+  <div class="step"><div class="n">2</div><div>
+    <b>실행</b> — 풀린 폴더 안의 <code>실행.command</code>를 더블클릭합니다.
+  </div></div>
+  <div class="step"><div class="n">3</div><div>
+    <b>기다리기</b> — 처음 한 번은 파이썬 환경과 AI 모델(약 1GB)을 자동으로 설치해요.
+    인터넷 속도에 따라 몇 분에서 수십 분 걸립니다. 끝나면 메뉴바에 Kit이 나타나요.
+  </div></div>
+</div>
+<div class="tip">
+  <b>"확인되지 않은 개발자" 경고가 뜬다면?</b><br>
+  인터넷에서 받은 파일이라 맥이 한 번 확인하는 거예요.
+  <code>실행.command</code>를 <b>우클릭(또는 Ctrl+클릭) → 열기 → 열기</b>를 누르면 됩니다.
+  macOS 15 이상에서는 <span class="path">시스템 설정 → 개인정보 보호 및 보안</span> 맨 아래의
+  <b>"그대로 열기"</b>를 눌러주세요. 처음 한 번만 하면 돼요.
+</div>
+
+<h2 id="start"><span class="no">2.</span>시작하기 — 메뉴바와 토끼</h2>
+<p>Kit은 두 가지 모습으로 쓸 수 있어요. <b>기능은 완전히 같으니</b> 편한 쪽을 쓰면 됩니다.</p>
+<div class="card">
+  <h3>🧰 메뉴바 아이콘</h3>
+  <p>화면 맨 위 오른쪽의 공구함 아이콘을 클릭하면 전체 메뉴가 열립니다.
+  녹화·녹음 중에는 아이콘 자리에 <b>🔴 경과 시간</b>이 표시돼요.</p>
+  <h3>🐰 플로팅 토끼 팔레트</h3>
+  <p>메뉴바 메뉴에서 <b>"🎪 플로팅 팔레트 열기"</b>를 누르면 화면 위에 토끼가 떠다녀요.</p>
+  <ul>
+    <li><b>클릭</b> → 메뉴가 열려요 (토끼가 폴짝 뜁니다)</li>
+    <li><b>드래그</b> → 원하는 자리로 옮겨요 (위치는 자동 저장)</li>
+    <li><b>토끼 숨기기</b> → 메뉴 맨 아래 "✕ 토끼 숨기기"</li>
+  </ul>
+</div>
+
+<h2 id="capture"><span class="no">3.</span>캡처와 편집</h2>
+<table>
+  <tr><th>메뉴</th><th>하는 일</th></tr>
+  <tr><td>영역 캡처</td><td>마우스로 드래그한 부분만 캡처</td></tr>
+  <tr><td>전체화면 캡처</td><td>화면 전체를 캡처</td></tr>
+  <tr><td>창 캡처</td><td>클릭한 창 하나만 캡처</td></tr>
+  <tr><td>캡처 후 편집</td><td>캡처하자마자 편집창이 열림</td></tr>
+  <tr><td>캡처 폴더 열기</td><td>저장 폴더를 Finder로 열기</td></tr>
+</table>
+<p>캡처하면 저장 폴더(기본: 바탕화면)에 <code>캡처_날짜_시각.png</code>로 저장되고 미리보기로 바로 열려요.</p>
+<div class="card">
+  <h3>✏️ 편집창 도구</h3>
+  <p><b>🟥 모자이크</b>(개인정보 가리기) · <b>⬜ 박스</b> · <b>➡️ 화살표</b> · <b>✏️ 펜</b> ·
+  <b>🔤 글자</b> · <b>✂️ 자르기</b> — 원하는 도구를 누르고 이미지 위에서 드래그하면 돼요.</p>
+  <p>실수했다면 <b>↩︎ 실행취소</b>. 다 됐으면 <b>📋 복사</b>(바로 붙여넣기용) 또는
+  <b>💾 저장</b>(<code>_편집.png</code>로 저장). 화면에는 작게 보여도 <b>원본 화질 그대로</b> 저장됩니다.</p>
+</div>
+
+<h2 id="record"><span class="no">4.</span>화면 녹화 · 음성 녹음</h2>
+<div class="card">
+  <h3>🎥 화면 녹화</h3>
+  <p>"화면 녹화 시작"을 누르면 화면 전체와 <b>마이크 소리</b>가 함께 녹화됩니다.
+  같은 메뉴를 다시 누르면 저장돼요 (<code>녹화_날짜_시각.mov</code>).</p>
+  <p class="path">※ 유튜브 소리 같은 '컴퓨터 내부 소리'는 들어가지 않아요. 내 목소리(마이크)만 녹음됩니다.</p>
+  <h3>🎙️ 음성 녹음</h3>
+  <p>회의·메모용 음성 녹음이에요. 멈추면 <b>잡음 제거</b>(팬 소리, 웅웅거림)를 거쳐
+  <code>녹음_날짜_시각.m4a</code>로 저장되고, 바로 <b>글자로 변환할지</b> 물어봐요.</p>
+  <h3>📝 녹음을 글자로 변환</h3>
+  <p>이미 가진 녹음 파일(m4a, mp3, wav 등)을 고르면 시간표시가 붙은 텍스트 파일로 만들어줘요.
+  변환 중엔 메뉴바에 "⏳ 글자 변환중…"이 표시되고, 끝나면 자동으로 열립니다.</p>
+</div>
+
+<h2 id="interpret"><span class="no">5.</span>통역과 번역</h2>
+<div class="card">
+  <h3>🎤 통역 (말 → 번역)</h3>
+  <p>시작을 누르고 한국어로 말한 뒤 중지하면, 원문과 영어 번역이 함께 담긴
+  텍스트 파일이 만들어져요. 회의 내용 정리에 좋아요.</p>
+  <h3>💬 실시간 통역 창</h3>
+  <p>별도 창이 열리고, 말을 잠깐 멈출 때마다 자막처럼 원문과 번역이 떠요.</p>
+  <ul>
+    <li><b>말하는 언어 / 번역 언어</b>를 위쪽에서 고르세요 (한·영·일·중)</li>
+    <li><b>🎙 마이크 선택</b> — 이어폰을 꽂았다면 여기서 바꿔요</li>
+    <li><b>A− / A+</b> 글자 크기 · <b>💾 저장</b> — 대화 내용을 파일로</li>
+  </ul>
+  <p class="path">※ 완전 동시통역이 아니라 몇 초 따라오는 "거의 실시간"이에요.
+  말을 잠깐씩 끊어주면 더 정확해요.</p>
+  <h3>🌍 번역 (글)</h3>
+  <p>도착 언어를 고르고 글을 붙여넣으면 바로 번역해요. 출발 언어는 자동 판별.
+  번역 품질: 한↔영 좋음 · 한↔일 양호 · 한↔중 보통.</p>
+</div>
+
+<h2 id="etc"><span class="no">6.</span>청소 · 설정</h2>
+<div class="card">
+  <h3>🧹 바탕화면 청소</h3>
+  <p>바탕화면에 흩어진 파일을 <b>이미지·동영상·문서·음악·압축·기타</b>로 분류해서
+  <code>정리됨_날짜</code> 폴더로 옮겨줘요. <b>삭제는 절대 하지 않고</b> 옮기기만 하고,
+  폴더는 건드리지 않아요.</p>
+  <h3>⚙️ 설정</h3>
+  <ul>
+    <li><b>로그인 시 자동 시작</b> — 맥을 켜면 Kit도 자동으로 켜져요</li>
+    <li><b>저장 폴더 변경</b> — 캡처·녹화·녹음이 저장될 곳을 바꿔요 (기본: 바탕화면)</li>
+  </ul>
+</div>
+
+<h2 id="permission"><span class="no">7.</span>권한 설정 (처음 한 번)</h2>
+<p>맥은 화면과 마이크를 쓰는 앱에 허락을 요구해요. <b>처음 한 번만</b> 설정하면 됩니다.</p>
+<div class="card">
+  <h3>화면 기록 권한 (캡처·화면 녹화)</h3>
+  <div class="step"><div class="n">1</div><div>캡처나 녹화를 한 번 시도해요 (권한 목록에 나타나게 하기 위해서예요)</div></div>
+  <div class="step"><div class="n">2</div><div><span class="path">시스템 설정 → 개인정보 보호 및 보안 → 화면 및 시스템 오디오 기록</span>으로 가요</div></div>
+  <div class="step"><div class="n">3</div><div>목록에 보이는 <b>터미널</b>(또는 <b>Python</b>)을 켜요</div></div>
+  <div class="step"><div class="n">4</div><div>Kit을 종료(메뉴 → 종료)하고 <code>실행.command</code>로 다시 켜요</div></div>
+  <h3>마이크 권한 (녹음·통역)</h3>
+  <p>처음 녹음을 시작할 때 뜨는 창에서 <b>허용</b>만 누르면 끝이에요.</p>
+</div>
+
+<h2 id="faq"><span class="no">8.</span>문제 해결 / 자주 묻는 질문</h2>
+<details>
+  <summary>앱이 안 켜져요 / 더블클릭해도 아무 일이 없어요</summary>
+  <p>① "확인되지 않은 개발자" 경고라면 위 <a href="#install">설치하기</a>의 우클릭 → 열기 방법을 써요.<br>
+  ② 폴더를 다른 곳으로 옮겼다면 그냥 다시 <code>실행.command</code>를 더블클릭하면 돼요.<br>
+  ③ 그래도 안 되면 터미널을 열고 <code>cat /tmp/biseo.log</code>를 입력해 나온 내용을 확인해요 —
+  개발자에게 문의할 때 이 내용을 함께 보내주면 좋아요.</p>
+</details>
+<details>
+  <summary>녹화 파일이 비어 있거나 저장이 안 돼요</summary>
+  <p>화면 기록 권한이 없어서예요. <a href="#permission">권한 설정</a>대로 켠 뒤
+  <b>Kit을 껐다 다시 켜야</b> 적용돼요.</p>
+</details>
+<details>
+  <summary>녹음이 저장되지 않았다고 나와요</summary>
+  <p>마이크 권한을 확인하세요: <span class="path">시스템 설정 → 개인정보 보호 및 보안 → 마이크</span>에서
+  터미널(또는 Python)이 켜져 있어야 해요.</p>
+</details>
+<details>
+  <summary>실시간 통역이 내 말을 못 알아들어요</summary>
+  <p>① 통역 창의 🎙 마이크 선택이 실제 쓰는 마이크인지 확인해요 (이어폰 연결 시 특히).<br>
+  ② "말하는 언어"가 맞게 선택됐는지 확인해요.<br>
+  ③ 문장 사이에 잠깐씩 쉬어주면 인식이 훨씬 정확해져요.</p>
+</details>
+<details>
+  <summary>설치(다운로드)가 중간에 실패했어요</summary>
+  <p>인터넷 연결을 확인하고 <code>실행.command</code>를 다시 더블클릭하세요.
+  이미 받은 부분은 건너뛰고 <b>이어서</b> 받아요.</p>
+</details>
+<details>
+  <summary>맨 처음 글자 변환·통역이 유난히 느려요</summary>
+  <p>첫 사용 때 AI 모델을 메모리에 올리느라 시간이 걸려요. 두 번째부터는 빨라집니다.</p>
+</details>
+<details>
+  <summary>인터넷이 없는 곳에서도 되나요?</summary>
+  <p>네! 설치만 끝나면 캡처·녹화·녹음·글자변환·통역·번역 전부 인터넷 없이 동작해요.
+  (🌐 웹 도구 바로가기만 인터넷이 필요해요)</p>
+</details>
+<details>
+  <summary>끄는 방법 / 지우는 방법</summary>
+  <p><b>끄기</b>: 메뉴바 아이콘 → 종료.<br>
+  <b>완전히 지우기</b>: Kit 폴더를 휴지통에 버리면 끝이에요. 자동 시작을 켰었다면
+  먼저 설정에서 꺼주세요.</p>
+</details>
+
+<h2 id="privacy"><span class="no">9.</span>개인정보</h2>
+<div class="card">
+  <p><b>모든 처리는 내 컴퓨터 안에서만</b> 이뤄져요. 녹음한 목소리, 캡처한 화면,
+  번역한 글 — 어떤 것도 외부로 전송되지 않아요. 회원가입도, API 키도 없어요.</p>
+  <p>인터넷은 <b>최초 설치 때 한 번</b>(AI 모델 다운로드)만 사용하고,
+  내려받는 파일은 체크섬으로 무결성을 확인해요.</p>
+</div>
+
+<footer>
+  <p>Kit v0.6 · <a href="https://github.com/commme/kit">GitHub에서 소스 보기</a> · MIT License</p>
+  <p>🐰 만든 사람의 작은 비서가 여러분에게도 도움이 되길!</p>
+</footer>
+
+</div>
+</body>
+</html>
