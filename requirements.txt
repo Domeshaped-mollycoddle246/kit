@@ -6,3 +6,4 @@ faster-whisper==1.2.1   # 음성 → 글자 (오프라인)
 sentencepiece==0.2.1    # 번역 토크나이저
 ctranslate2==4.8.0      # 음성인식/번역 모델 실행 엔진
 pyobjc-framework-Cocoa  # macOS 플로팅 윈도우
+sounddevice==0.5.5      # 마이크 녹음 (CoreAudio — ffmpeg avfoundation 드랍 문제 회피)

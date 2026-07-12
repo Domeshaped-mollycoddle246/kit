@@ -9,13 +9,13 @@
 * rumps(메뉴바 앱)와 충돌하지 않도록 '별도 프로그램'으로 실행됩니다.
 """
 
-import audioop
-import glob
+import array
+import math
 import os
 import shutil
 import subprocess
 import sys
-import time
+import tempfile
 import wave
 from datetime import datetime
 
@@ -23,15 +23,24 @@ from PySide6.QtCore import QThread, Signal
 from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLabel,
                                QPushButton, QTextEdit, QVBoxLayout, QWidget)
 
-from features import avdevices, config, transcribe, translate
+from features import config, transcribe, translate
 
 LANG_OPTIONS = [("한국어", "ko"), ("English", "en"), ("日本語", "ja"), ("中文", "zh")]
-TMPDIR = "/tmp/biseo_live"
 
 SEGMENT_SEC = 2        # 잘게 듣는 단위 (짧을수록 반응 빠름)
 MAX_BUFFER_SEC = 10    # 말이 계속 이어져도 최대 이 길이마다 한 번 인식
 GATE_MIN = 150         # '조용함' 판단 최소 기준. 실제 기준은 주변 소음에 맞춰
                        # 자동으로 올라갑니다 (조용한 방에서 작게 말해도 인식되게)
+
+
+def _rms(frames: bytes) -> int:
+    """16비트 PCM의 소리 크기(RMS). (audioop은 파이썬 3.13에서 제거되어 직접 계산)"""
+    if not frames:
+        return 0
+    samples = array.array("h", frames[: len(frames) // 2 * 2])
+    if not samples:
+        return 0
+    return int(math.sqrt(sum(s * s for s in samples) / len(samples)))
 
 
 def _tail_rms(path: str, tail_sec: float = 0.5) -> int:
@@ -43,7 +52,7 @@ def _tail_rms(path: str, tail_sec: float = 0.5) -> int:
             if take <= 0:
                 return 0
             w.setpos(n - take)
-            return audioop.rms(w.readframes(take), 2)
+            return _rms(w.readframes(take))
     except Exception:
         return 10 ** 6         # 판단 불가 시 '말하는 중'으로 취급
 
@@ -51,8 +60,7 @@ def _tail_rms(path: str, tail_sec: float = 0.5) -> int:
 def _max_rms(path: str) -> int:
     try:
         with wave.open(path) as w:
-            frames = w.readframes(w.getnframes())
-            return audioop.rms(frames, 2) if frames else 0
+            return _rms(w.readframes(w.getnframes()))
     except Exception:
         return 0
 
@@ -80,28 +88,37 @@ class Worker(QThread):
         self.prev_text = ""     # 직전 인식 결과 (문맥 힌트)
         self._gate = GATE_MIN   # '조용함' 기준 (주변 소음에 맞춰 자동 조정)
         self._rms_hist = []     # 최근 조각들의 소리 크기 기록
+        self._tmpdir = None     # 소리 조각 임시 폴더 (나만 읽을 수 있게 만들어짐)
 
     def _resolve_mic(self):
         """장치 '이름'으로 최신 번호를 다시 찾습니다.
         (이어폰을 꽂거나 빼면 번호가 바뀌기 때문)"""
+        import sounddevice as sd
         want = self.win.mic_name()
         try:
-            _, devs = avdevices.list_devices()
+            devs = sd.query_devices()
         except Exception:
             return None
-        for idx, name in devs.items():
-            if name == want:
-                return idx
-        return avdevices.find_mic(devs)   # 못 찾으면 기본 마이크로
+        for i, d in enumerate(devs):
+            if d["max_input_channels"] > 0 and d["name"] == want:
+                return i
+        return None   # None = 시스템 기본 입력
+
+    def _write_seg(self, idx, pcm):
+        path = os.path.join(self._tmpdir, f"seg_{idx:04d}.wav")
+        with wave.open(path, "wb") as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(16000)
+            w.writeframes(pcm)
+        return path
 
     def run(self):
-        shutil.rmtree(TMPDIR, ignore_errors=True)
-        os.makedirs(TMPDIR, exist_ok=True)
+        import queue as _queue
 
-        mic = self._resolve_mic()
-        if mic is None:
-            self.status.emit("⚠️ 마이크를 찾지 못했어요. 마이크 연결을 확인해 주세요.")
-            return
+        import sounddevice as sd
+
+        self._tmpdir = tempfile.mkdtemp(prefix="kit_live_")
 
         # 첫 문장부터 빨리 나오도록 인식 모델을 미리 올려둡니다
         self.status.emit("🧠 음성인식 준비 중… (잠시만요)")
@@ -111,67 +128,74 @@ class Worker(QThread):
             self.status.emit("⚠️ 음성인식 모델 오류: " + str(e))
             return
 
-        cmd = [avdevices.FFMPEG, "-hide_banner", "-y",
-               "-f", "avfoundation", "-i", f":{mic}",
-               "-ac", "1", "-ar", "16000",
-               "-f", "segment", "-segment_time", str(SEGMENT_SEC),
-               "-reset_timestamps", "1",
-               os.path.join(TMPDIR, "seg_%04d.wav")]
-        self.proc = subprocess.Popen(cmd, stdin=subprocess.PIPE,
-                                     stdout=subprocess.DEVNULL,
-                                     stderr=subprocess.DEVNULL)
+        # CoreAudio로 마이크를 직접 받습니다 (ffmpeg avfoundation은
+        # 소리를 조용히 버리는 문제가 있어 쓰지 않습니다)
+        q = _queue.Queue()
+
+        def callback(indata, frames, time_info, status):
+            q.put(bytes(indata))
+
+        try:
+            stream = sd.InputStream(device=self._resolve_mic(), channels=1,
+                                    samplerate=16000, dtype="int16",
+                                    callback=callback)
+            stream.start()
+        except Exception as e:
+            self.status.emit("⚠️ 마이크를 열지 못했어요: " + str(e))
+            return
         self.status.emit("🎧 듣는 중… 말씀하세요 (말을 잠깐 멈추면 자막이 떠요)")
 
         buffer = []          # 아직 인식 안 한 조각들
         buffer_sec = 0
-        processed = set()
         speaking = False     # 방금까지 말소리가 들렸는지 (상태 표시용)
+        acc = b""            # 지금 모으는 중인 조각
+        seg_bytes = 16000 * 2 * SEGMENT_SEC
+        seg_idx = 0
 
         while self._running:
-            # 마이크가 안 열리면(장치 바뀜 등) ffmpeg가 바로 죽어요 → 알려주기
-            if self.proc.poll() is not None:
-                self.status.emit("⚠️ 마이크 연결에 실패했어요. 🎙 목록에서 마이크를 "
-                                 "다시 선택하거나 창을 닫았다 열어주세요.")
-                return
-            files = sorted(glob.glob(os.path.join(TMPDIR, "seg_*.wav")))
-            for f in files[:-1]:          # 마지막 파일은 아직 녹음 중
-                if f in processed:
-                    continue
-                processed.add(f)
-                buffer.append(f)
-                buffer_sec += SEGMENT_SEC
-
-                # '조용함' 기준을 주변 소음에 맞춰 자동 조정:
-                # 최근 조각들 중 조용한 편(하위 25%)의 2.5배를 기준으로 삼되,
-                # 최소 GATE_MIN 밑으로는 내려가지 않게.
-                rms = _max_rms(f)
-                self._rms_hist = (self._rms_hist + [rms])[-30:]
-                floor = sorted(self._rms_hist)[len(self._rms_hist) // 4]
-                # 말을 오래 이어가면 기준선이 말소리까지 올라가므로 상한을 둠
-                self._gate = max(GATE_MIN, min(int(floor * 2.5), 600))
-
-                # 말소리 감지 여부를 상태줄로 알려줌 (마이크가 듣고 있다는 확인)
-                if rms > self._gate and not speaking:
-                    speaking = True
-                    self.status.emit("🗣 말소리 감지! 잠깐 멈추면 자막이 떠요")
-                elif rms <= self._gate and speaking:
-                    speaking = False
-
-                # 말이 멈췄거나(조각 끝이 조용) 버퍼가 가득 → 한 번에 인식
-                if _tail_rms(f) < self._gate or buffer_sec >= MAX_BUFFER_SEC:
-                    self._flush(buffer)
-                    buffer, buffer_sec = [], 0
-            time.sleep(0.3)
-
-        # 중지 → 녹음 종료 후 남은 조각 마저 처리
-        if self.proc:
             try:
-                self.proc.communicate(input=b"q", timeout=5)
-            except Exception:
-                self.proc.terminate()
-        leftovers = [f for f in sorted(glob.glob(os.path.join(TMPDIR, "seg_*.wav")))
-                     if f not in processed]
-        self._flush(buffer + leftovers)
+                acc += q.get(timeout=0.3)
+            except _queue.Empty:
+                continue
+            if len(acc) < seg_bytes:
+                continue
+            f = self._write_seg(seg_idx, acc[:seg_bytes])
+            acc = acc[seg_bytes:]
+            seg_idx += 1
+            buffer.append(f)
+            buffer_sec += SEGMENT_SEC
+
+            # '조용함' 기준을 주변 소음에 맞춰 자동 조정:
+            # 최근 조각들 중 조용한 편(하위 25%)의 2.5배를 기준으로 삼되,
+            # 최소 GATE_MIN 밑으로는 내려가지 않게.
+            rms = _max_rms(f)
+            self._rms_hist = (self._rms_hist + [rms])[-30:]
+            floor = sorted(self._rms_hist)[len(self._rms_hist) // 4]
+            # 말을 오래 이어가면 기준선이 말소리까지 올라가므로 상한을 둠
+            self._gate = max(GATE_MIN, min(int(floor * 2.5), 600))
+
+            # 말소리 감지 여부를 상태줄로 알려줌 (마이크가 듣고 있다는 확인)
+            if rms > self._gate and not speaking:
+                speaking = True
+                self.status.emit("🗣 말소리 감지! 잠깐 멈추면 자막이 떠요")
+            elif rms <= self._gate and speaking:
+                speaking = False
+
+            # 말이 멈췄거나(조각 끝이 조용) 버퍼가 가득 → 한 번에 인식
+            if _tail_rms(f) < self._gate or buffer_sec >= MAX_BUFFER_SEC:
+                self._flush(buffer)
+                buffer, buffer_sec = [], 0
+
+        # 중지 → 남은 소리 마저 처리
+        try:
+            stream.stop()
+            stream.close()
+        except Exception:
+            pass
+        if acc:
+            buffer.append(self._write_seg(seg_idx, acc))
+        self._flush(buffer)
+        shutil.rmtree(self._tmpdir, ignore_errors=True)
 
     def _flush(self, chunk_files):
         chunk_files = [f for f in chunk_files if os.path.exists(f)]
@@ -182,7 +206,7 @@ class Worker(QThread):
             # (기준을 넘는 소리가 있으면 Whisper VAD가 한 번 더 걸러줍니다)
             if max(_max_rms(f) for f in chunk_files) < self._gate:
                 return
-            merged = os.path.join(TMPDIR, "merged.wav")
+            merged = os.path.join(self._tmpdir, "merged.wav")
             _concat_wavs(chunk_files, merged)
             src, tgt = self.win.src_code(), self.win.tgt_code()
             text = transcribe.transcribe_live(merged, src, self.prev_text)
@@ -239,14 +263,16 @@ class LiveWindow(QWidget):
         row2.addWidget(QLabel("🎙"))
         self.mic_combo = QComboBox()
         try:
-            _, audio_devs = avdevices.list_devices()
+            import sounddevice as sd
+            devs = sd.query_devices()
+            default_in = sd.default.device[0]
         except Exception:
-            audio_devs = {}
-        default_mic = avdevices.find_mic(audio_devs) if audio_devs else None
-        for idx in sorted(audio_devs):
-            self.mic_combo.addItem(audio_devs[idx], idx)
-            if idx == default_mic:
-                self.mic_combo.setCurrentIndex(self.mic_combo.count() - 1)
+            devs, default_in = [], -1
+        for i, d in enumerate(devs):
+            if d["max_input_channels"] > 0:
+                self.mic_combo.addItem(d["name"], i)
+                if i == default_in:
+                    self.mic_combo.setCurrentIndex(self.mic_combo.count() - 1)
         self.mic_combo.currentIndexChanged.connect(self._mic_changed)
         row2.addWidget(self.mic_combo)
         row2.addStretch()
