@@ -57,9 +57,9 @@ class BiseoApp(rumps.App):
 
         # 글자가 바뀌는 토글 메뉴들
         self.rec_item = rumps.MenuItem("⏺︎ 화면 녹화 시작", callback=self.on_record)
-        self.aud_item = rumps.MenuItem("∿ 음성 녹음 시작", callback=self.on_audio)
-        self.txt_item = rumps.MenuItem("✎ 녹음을 글자로 변환…", callback=self.on_transcribe)
-        self.interpret_item = rumps.MenuItem("▶︎ 통역 시작 (말→번역)", callback=self.on_interpret)
+        self.aud_item = rumps.MenuItem("⏺︎ 음성 녹음 시작", callback=self.on_audio)
+        self.txt_item = rumps.MenuItem("⏺︎ 녹음을 글자로 변환…", callback=self.on_transcribe)
+        self.interpret_item = rumps.MenuItem("⏺︎ 통역 시작 (말→번역)", callback=self.on_interpret)
 
         # 🌍 번역 (도착 언어 선택)
         self.translate_menu = _submenu("번역 (글)", [
@@ -70,7 +70,7 @@ class BiseoApp(rumps.App):
         ])
 
         # 🌐 웹 도구
-        self.web_menu = _submenu("✦ 웹 도구", [
+        self.web_menu = _submenu("⏺︎ 웹 도구", [
             (label, lambda _, u=url: webbrowser.open(u)) for label, url in WEB_TOOLS
         ])
 
@@ -78,34 +78,34 @@ class BiseoApp(rumps.App):
         self.autostart_item = rumps.MenuItem("로그인 시 자동 시작",
                                              callback=self.on_autostart)
         self.autostart_item.state = 1 if autostart.is_enabled() else 0
-        self.settings_menu = _submenu("⚙︎ 설정", [
+        self.settings_menu = _submenu("⏺︎ 설정", [
             self.autostart_item,
             ("저장 폴더 변경…", self.on_change_folder),
         ])
 
         # ===== 카테고리 메뉴 구성 =====
         self.menu = [
-            rumps.MenuItem("❖ 플로팅 팔레트 열기", callback=self.on_open_palette),
+            rumps.MenuItem("⏺︎ 플로팅 팔레트 열기", callback=self.on_open_palette),
             None,
-            _submenu("⌗ 캡처", [
+            _submenu("⏺︎ 캡처", [
                 ("영역 캡처", self.on_area),
                 ("전체화면 캡처", self.on_full),
                 ("창 캡처", self.on_window),
                 ("캡처 후 편집(모자이크/표시)", self.on_capture_edit),
                 ("캡처 폴더 열기", self.on_open_folder),
             ]),
-            _submenu("◉ 녹화·녹음", [self.rec_item, self.aud_item, self.txt_item]),
-            _submenu("⇄ 통역·번역", [
+            _submenu("⏺︎ 녹화·녹음", [self.rec_item, self.aud_item, self.txt_item]),
+            _submenu("⏺︎ 통역·번역", [
                 self.interpret_item,
                 ("실시간 통역 창", self.on_live),
                 self.translate_menu,
             ]),
             self.web_menu,
             None,
-            rumps.MenuItem("⌂ 바탕화면 청소", callback=self.on_cleanup),
+            rumps.MenuItem("⏺︎ 바탕화면 청소", callback=self.on_cleanup),
             None,
             self.settings_menu,
-            rumps.MenuItem("ⓘ 정보", callback=self.on_info),
+            rumps.MenuItem("⏺︎ 정보", callback=self.on_info),
             None,
             rumps.MenuItem("종료", callback=self.on_quit),
         ]
@@ -167,7 +167,7 @@ class BiseoApp(rumps.App):
             out = audio.stop()
             self._mic_purpose = None
             self._aud_start = None
-            self.aud_item.title = "∿ 음성 녹음 시작"
+            self.aud_item.title = "⏺︎ 음성 녹음 시작"
             if out and os.path.exists(out) and os.path.getsize(out) > 0:
                 resp = rumps.alert(
                     title="음성 녹음 완료",
@@ -193,7 +193,7 @@ class BiseoApp(rumps.App):
             out = audio.stop()
             self._mic_purpose = None
             self._aud_start = None
-            self.interpret_item.title = "▶︎ 통역 시작 (말→번역)"
+            self.interpret_item.title = "⏺︎ 통역 시작 (말→번역)"
             if out:
                 self._start_bg("⏳ 통역 처리중…", self._do_interpretation, out)
         else:
@@ -373,7 +373,7 @@ class BiseoApp(rumps.App):
             label = "통역" if self._mic_purpose == "interpret" else "녹음"
             parts.append(label + " " + _fmt(time.time() - self._aud_start))
         if parts:
-            self.title = "⏺︎ " + "  ".join(parts)
+            self.title = "🔴 " + "  ".join(parts)
         else:
             # 아이콘이 있으면 글자 없이 아이콘만, 없으면 'Kit' 글자
             self.title = None if self._has_icon else "Kit"
