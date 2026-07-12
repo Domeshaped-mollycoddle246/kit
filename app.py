@@ -174,7 +174,7 @@ class BiseoApp(rumps.App):
                     message=f"저장됨: {os.path.basename(out)}\n\n이 녹음을 글자(텍스트)로 변환할까요?",
                     ok="글자로 변환", cancel="나중에")
                 if resp == 1:
-                    self._start_bg("⋯ 글자 변환중…", self._do_transcription, out)
+                    self._start_bg("⏳ 글자 변환중…", self._do_transcription, out)
                 else:
                     subprocess.run(["open", "-R", out])
             else:
@@ -195,7 +195,7 @@ class BiseoApp(rumps.App):
             self._aud_start = None
             self.interpret_item.title = "▶︎ 통역 시작 (말→번역)"
             if out:
-                self._start_bg("⋯ 통역 처리중…", self._do_interpretation, out)
+                self._start_bg("⏳ 통역 처리중…", self._do_interpretation, out)
         else:
             if self._start_mic("interpret"):
                 self.interpret_item.title = "⏹︎ 통역 중지"
@@ -240,7 +240,7 @@ class BiseoApp(rumps.App):
             return
         path = self._choose_audio()
         if path:
-            self._start_bg("⋯ 글자 변환중…", self._do_transcription, path)
+            self._start_bg("⏳ 글자 변환중…", self._do_transcription, path)
 
     def _choose_audio(self):
         script = 'POSIX path of (choose file with prompt "글자로 변환할 녹음 파일을 고르세요")'
@@ -373,7 +373,7 @@ class BiseoApp(rumps.App):
             label = "통역" if self._mic_purpose == "interpret" else "녹음"
             parts.append(label + " " + _fmt(time.time() - self._aud_start))
         if parts:
-            self.title = "● " + "  ".join(parts)
+            self.title = "⏺︎ " + "  ".join(parts)
         else:
             # 아이콘이 있으면 글자 없이 아이콘만, 없으면 'Kit' 글자
             self.title = None if self._has_icon else "Kit"

@@ -414,12 +414,12 @@ class RabbitPalette(QWidget):
         from features import audio, record
         parts = []
         if self._busy:
-            parts.append("⋯ " + self._busy)
+            parts.append("⏳ " + self._busy)
         if record.is_recording() and self._rec_start:
-            parts.append("● 화면 " + _fmt(time.time() - self._rec_start))
+            parts.append("🔴 화면 " + _fmt(time.time() - self._rec_start))
         if audio.is_recording() and self._aud_start:
             label = "통역" if self._mic_purpose == "interpret" else "녹음"
-            parts.append("● " + label + " " + _fmt(time.time() - self._aud_start))
+            parts.append("🔴 " + label + " " + _fmt(time.time() - self._aud_start))
         if parts:
             self.status.setText("  ".join(parts))
             self.status.show()
