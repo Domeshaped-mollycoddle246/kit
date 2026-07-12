@@ -17,8 +17,7 @@ from PySide6.QtCore import (Qt, QEasingCurve, QPoint, QPropertyAnimation,
                             QSequentialAnimationGroup, QSize, QTimer)
 from PySide6.QtGui import QAction, QMovie
 from PySide6.QtWidgets import (QApplication, QFileDialog, QInputDialog,
-                               QLabel, QMenu, QMessageBox, QVBoxLayout,
-                               QWidget)
+                               QLabel, QMenu, QMessageBox, QWidget)
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, APP_DIR)

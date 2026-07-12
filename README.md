@@ -30,14 +30,14 @@ kit/
 │   ├─ cleanup.py      # 바탕화면 청소
 │   ├─ record.py       # 화면 녹화
 │   ├─ audio.py        # 음성 녹음
-│   ├─ avdevices.py    # 화면/마이크 장치 감지
+│   ├─ denoise.py      # 잡음 제거 (RNNoise)
 │   ├─ transcribe.py   # 음성 → 글자 (Whisper)
 │   ├─ translate.py    # 번역 (Argos, 오프라인)
 │   ├─ config.py       # 설정 저장 (저장 폴더 등)
 │   └─ autostart.py    # 로그인 시 자동 시작
-├─ assets/             # 메뉴바 아이콘
-├─ bin/ffmpeg          # 녹화/녹음용 (download_assets.sh 로 받음)
-├─ models/             # AI 모델 (download_assets.sh 로 받음)
+├─ assets/             # 메뉴바 아이콘, 토끼 애니메이션
+├─ bin/ffmpeg          # 녹음 변환/잡음제거용 (download_assets.sh 로 받음)
+├─ models/             # AI 모델·잡음제거 모델 (download_assets.sh 로 받음)
 ├─ scripts/
 │   └─ download_assets.sh
 ├─ requirements.txt
@@ -57,7 +57,7 @@ bash scripts/download_assets.sh      # ffmpeg + AI 모델 다운로드
 
 ## 실행
 
-`실행.command` 더블클릭 → 메뉴바(화면 맨 위)에 **"비서"** 가 나타납니다.
+`실행.command` 더블클릭 → 메뉴바(화면 맨 위)에 **Kit** 아이콘이 나타납니다.
 끄려면: 메뉴 → 종료.
 
 ## 권한 (한 번만)
@@ -77,3 +77,11 @@ bash scripts/download_assets.sh      # ffmpeg + AI 모델 다운로드
 
 - 번역 품질: 한↔영 좋음 · 한↔일 양호 · 한↔중 보통 (무료·오프라인 한계)
 - 실시간 통역은 "완전 동시통역"이 아니라 몇 초 따라오는 **거의 실시간**입니다.
+- Python 3.9 이상에서 개발·테스트했습니다.
+
+## 개인정보·보안
+
+- **모든 처리는 컴퓨터 안에서만** 이뤄집니다. 녹음·캡처·번역 내용이 외부로 전송되지 않고,
+  API 키·계정도 필요 없습니다.
+- 인터넷 연결은 **최초 설치 때 한 번**(`download_assets.sh`로 ffmpeg·AI 모델 다운로드)만 사용합니다.
+  ffmpeg와 잡음제거 모델은 SHA256 체크섬으로 무결성을 확인합니다.
