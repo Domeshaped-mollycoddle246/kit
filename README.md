@@ -44,21 +44,30 @@ kit/
 └─ 실행.command        # 더블클릭으로 앱 켜기
 ```
 
-## 처음 설치 (새 맥)
+## 설치 & 실행 — 더블클릭 한 번이면 끝
+
+1. 이 페이지 위쪽 **`Code` → `Download ZIP`** 을 눌러 내려받고, 압축을 풉니다.
+2. 풀린 폴더 안의 **`실행.command`** 를 더블클릭합니다.
+   - 처음 열 때 *"확인되지 않은 개발자"* 경고가 뜨면:
+     파일을 **우클릭(또는 Ctrl+클릭) → 열기 → 열기**.
+     (macOS 15 이상은 시스템 설정 → 개인정보 보호 및 보안 맨 아래 → **그대로 열기**)
+3. 처음 한 번은 파이썬 환경과 AI 모델(약 1GB)을 자동으로 설치합니다 — 인터넷 속도에 따라
+   몇 분에서 수십 분 걸려요. 끝나면 메뉴바(화면 맨 위)에 **Kit** 아이콘이 나타납니다.
+
+다음부터는 더블클릭하면 바로 켜집니다. 끄려면: 메뉴 → 종료.
+
+<details>
+<summary>터미널로 설치하고 싶다면 (개발자용)</summary>
 
 ```bash
 git clone https://github.com/commme/kit.git
 cd kit
 python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+.venv/bin/pip install -r requirements.txt
 bash scripts/download_assets.sh      # ffmpeg + AI 모델 다운로드
+./실행.command
 ```
-
-## 실행
-
-`실행.command` 더블클릭 → 메뉴바(화면 맨 위)에 **Kit** 아이콘이 나타납니다.
-끄려면: 메뉴 → 종료.
+</details>
 
 ## 권한 (한 번만)
 
