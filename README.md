@@ -38,6 +38,7 @@ kit/
 │   ├─ config.py       # 설정 저장 (저장 폴더 등)
 │   └─ autostart.py    # 로그인 시 자동 시작
 ├─ assets/             # 메뉴바 아이콘, 토끼 애니메이션
+├─ docs/               # 사용자 매뉴얼 (GitHub Pages)
 ├─ bin/ffmpeg          # 녹음 변환/잡음제거용 (download_assets.sh 로 받음)
 ├─ models/             # AI 모델·잡음제거 모델 (download_assets.sh 로 받음)
 ├─ scripts/

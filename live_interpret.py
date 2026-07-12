@@ -305,9 +305,6 @@ class LiveWindow(QWidget):
     def tgt_code(self):
         return self.tgt_combo.currentData()
 
-    def mic_index(self):
-        return self.mic_combo.currentData()
-
     def mic_name(self):
         return self.mic_combo.currentText()
 

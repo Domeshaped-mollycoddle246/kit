@@ -22,11 +22,6 @@ _PACK_DIRS = {
 _cache = {}   # (src,tgt) -> (translator, sentencepiece)
 
 
-def available_pairs():
-    """실제로 다운로드된 언어팩만 돌려줍니다."""
-    return {pair for pair, name in _PACK_DIRS.items() if (BASE / name).exists()}
-
-
 def _load(src, tgt):
     key = (src, tgt)
     if key not in _cache:
