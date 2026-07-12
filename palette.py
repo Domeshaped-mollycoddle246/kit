@@ -151,7 +151,7 @@ class RabbitPalette(QWidget):
     def _show_menu(self):
         m = QMenu(self)
 
-        cap = m.addMenu("⌗ 캡처")
+        cap = m.addMenu("⏺︎ 캡처")
         cap.addAction("영역 캡처", lambda: self._in_thread(self._cap_area))
         cap.addAction("전체화면 캡처", lambda: self._in_thread(self._cap_full))
         cap.addAction("창 캡처", lambda: self._in_thread(self._cap_window))
@@ -166,31 +166,31 @@ class RabbitPalette(QWidget):
         if audio.is_recording() and self._mic_purpose == "record":
             m.addAction("⏹︎ 음성 녹음 중지", self._toggle_audio)
         else:
-            m.addAction("∿ 음성 녹음 시작", self._toggle_audio)
+            m.addAction("⏺︎ 음성 녹음 시작", self._toggle_audio)
 
-        m.addAction("✎ 녹음을 글자로 변환…", self._transcribe_file)
+        m.addAction("⏺︎ 녹음을 글자로 변환…", self._transcribe_file)
 
         m.addSeparator()
         if audio.is_recording() and self._mic_purpose == "interpret":
             m.addAction("⏹︎ 통역 중지", self._toggle_interpret)
         else:
-            m.addAction("▶︎ 통역 시작 (말→번역)", self._toggle_interpret)
-        m.addAction("실시간 통역 창", self._open_live)
+            m.addAction("⏺︎ 통역 시작 (말→번역)", self._toggle_interpret)
+        m.addAction("⏺︎ 실시간 통역 창", self._open_live)
 
-        tr = m.addMenu("⇄ 번역 (글)")
+        tr = m.addMenu("⏺︎ 번역 (글)")
         from features import translate as tr_mod
         for code in ("en", "ko", "ja", "zh"):
             tr.addAction(f"→ {tr_mod.LANGS[code]}",
                          lambda c=code: self._translate_text(c))
 
-        web = m.addMenu("✦ 웹 도구")
+        web = m.addMenu("⏺︎ 웹 도구")
         for label, url in WEB_TOOLS:
             web.addAction(label, lambda u=url: webbrowser.open(u))
 
         m.addSeparator()
-        m.addAction("⌂ 바탕화면 청소", self._cleanup)
+        m.addAction("⏺︎ 바탕화면 청소", self._cleanup)
 
-        st = m.addMenu("⚙︎ 설정")
+        st = m.addMenu("⏺︎ 설정")
         from features import autostart
         auto = QAction("로그인 시 자동 시작", st)
         auto.setCheckable(True)
