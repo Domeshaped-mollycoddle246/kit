@@ -11,10 +11,15 @@ if [ -x bin/ffmpeg ]; then
 else
   echo "▶ ffmpeg 내려받는 중…"
   mkdir -p bin
+  # 맥 종류(Apple Silicon/Intel)에 맞는 빌드를 골라요
+  case "$(uname -m)" in
+    arm64)  FF_ARCH="arm64" ;;
+    *)      FF_ARCH="amd64" ;;   # Intel 맥
+  esac
   # '최신' 링크가 가리키는 실제 파일 주소를 알아낸 뒤,
   # 배포처가 함께 올려둔 SHA256 체크섬으로 파일이 손상·변조되지 않았는지 확인합니다.
   FF_URL=$(curl -s -o /dev/null -w "%{url_effective}" -L -r 0-0 \
-    "https://ffmpeg.martin-riedl.de/redirect/latest/macos/arm64/release/ffmpeg.zip")
+    "https://ffmpeg.martin-riedl.de/redirect/latest/macos/$FF_ARCH/release/ffmpeg.zip")
   curl -fL "$FF_URL" -o /tmp/ffmpeg.zip
   curl -fL "${FF_URL}.sha256" -o /tmp/ffmpeg.zip.sha256
   echo "$(cat /tmp/ffmpeg.zip.sha256 | cut -d' ' -f1)  /tmp/ffmpeg.zip" | shasum -a 256 -c - \
