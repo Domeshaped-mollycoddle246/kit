@@ -80,11 +80,14 @@ bash scripts/download_assets.sh      # ffmpeg + AI 모델 다운로드
 
 ## 지원 환경
 
-- ✅ **macOS** — Apple Silicon에서 개발·테스트했고, Intel 맥용 설치(ffmpeg·필수 패키지)도
-  지원합니다. 다만 실제 Intel 기기에서 전체 기능을 검증하진 못했으니, 설치 중 오류가 나면
-  [이슈](https://github.com/commme/kit/issues)로 알려주세요.
-  - 2013년 이후 Intel 맥이면 대부분 문제없어요. 그보다 오래된 기종은 음성인식·번역
-    엔진(ctranslate2)이 필요로 하는 CPU 명령어(AVX2)가 없어 안 될 수 있습니다.
+- ✅ **macOS 11(빅서) 이상** — Apple Silicon·Intel 모두.
+  - Apple Silicon에서 개발·테스트했습니다. Intel 맥은 설치 스크립트가 자동으로
+    Intel용 ffmpeg와 맥 버전에 맞는 화면 라이브러리(PySide6)를 골라 설치해요.
+  - 파이썬 3.9 이상 필요 — 낮으면 실행할 때 안내 메시지가 떠요.
+  - 실제 Intel 기기에서 전체 기능을 검증하진 못했으니, 오류가 나면
+    [이슈](https://github.com/commme/kit/issues)로 알려주세요.
+  - 2013년 이전의 아주 오래된 Intel 기종은 음성인식·번역 엔진(ctranslate2)이
+    필요로 하는 CPU 명령어(AVX)가 없어 안 될 수 있습니다.
 - ❌ **Windows / Linux**: 현재 미지원.
   - 메뉴바·화면캡처·녹화·녹음 등이 macOS 전용 기술(rumps, screencapture, avfoundation 등)에 의존합니다.
   - 음성인식(faster-whisper)·번역(ctranslate2)·이미지편집(Pillow) **로직**은 크로스플랫폼이라, 윈도우판은 UI·캡처 계층만 새로 구현하면 가능합니다. (향후 과제)
